@@ -6,19 +6,19 @@
 试想这么一个场景，你的程序会做一件简单的 scatter-gather 的事，即发送多个请求，然后聚合这些请求的结果，并将其返回。
 
 举个例子，你将发送 3 个请求，其中，请求 A 返回结果 `[1]`，请求 B 返回结果为空，请求 C 返回结果 `[2]`，那么最终你需要返回聚合后的结果 `[1,2]`。
-![[Pasted image 20230207194601.png]]
+![](Pasted image 20230207194601.png)
 
 而在该过程，每个请求返回什么数据，是程序需要去考虑的事情，作为消费者的你并不关心，你只关心程序最终输出的结果。
 
 可是对于一名需要 debug 的程序员来说，我在知道最终结果是 `[1,2]` 之后，还需要搞清楚是哪个请求返回的 `[1]` 与 `[2]`。
 
 本来呢，此事也很简单。不就是把每个 URL 都打开来看看就一目了然了嘛。然而不巧的是，URL 中居然带了括号 `()`，导致在 IntelliJ 的 console 中显示效果如下：
-![[Pasted image 20230207195702.png]]
+![](Pasted image 20230207195702.png)
 
 以上是程序打印的日志，其格式可以简单认为是 `GET {URL} 200 OK`。观察可知，该 URL 左半部分是蓝色可点击的超链接状态，而右半部分则是 plain text。这就导致当你需要打开该链接时，没有办法一键点开，而是需要先拖拽鼠标选中该 URL，复制粘贴，然后才能在浏览器中打开。
 
 该 workflow 可以用以下伪代码描述：
-![[Pasted image 20230207202016.png]]
+![](Pasted image 20230207202016.png)
 
 那么本文将介绍我是如何优化该 workflow 的。
 
@@ -44,10 +44,10 @@ export search = (params) => {
 其中不需要在意 `len % 2 == 0` 该条件判断，我只是需要有一个分支，能够返回 `[]` 或者 `[{ id: len }]` 而已。
 
 最终当你请求 https://api.val.town/eval/@fake.search?query=(key:value) 时，会返回
-![[Pasted image 20230207203255.png]]
+![](Pasted image 20230207203255.png)
 
 当你请求 https://api.val.town/eval/@fake.search?query=((key:value)%20OR%20(a:b)) 时，会返回
-![[Pasted image 20230207203514.png]]
+![](Pasted image 20230207203514.png)
 
 ### Code
 代码分为 4 部分
@@ -221,10 +221,10 @@ public class ConsoleHyperlinkInputFilterProvider implements ConsoleInputFilterPr
 ```
 
 最终实现效果如下：
-![[Pasted image 20230207211121.png]]
+![](Pasted image 20230207211121.png)
 
 在写 IntelliJ Plugin 过程中，发现了一个 `UrlFilter`
-![[Pasted image 20221224170536.png]]
+![](Pasted image 20221224170536.png)
 
 它引用的 `URLUtil.URL_PATTERN` 正是我们想找的原正则，其值如下：
 ```Java
@@ -232,10 +232,10 @@ Pattern.compile("\\b(mailto:|(news|(ht|f)tp(s?))://|((?<![\\p{L}0-9_.])(www\\.))
 ```
 
 在 [regex101](https://regex101.com/)  中确实可以发现它匹配不了带 `()` 的 URL
-![[Pasted image 20230207211716.png]]
+![](Pasted image 20230207211716.png)
 
 总而言之，在经过第一次优化后，workflow 更新如下
-![[Pasted image 20230207212348.png]]
+![](Pasted image 20230207212348.png)
 
 > **Note**:
 > 该 Plugin 代码已上传至 [intellij-platform-plugin-clickable-hyperlink](https://github.com/wu-jinpeng/intellij-platform-plugin-clickable-hyperlink)
@@ -274,10 +274,10 @@ public class LoggingInterceptor implements ExchangeFilterFunction {
 ```
 
 再结合之前实现的 Plugin，最终效果如下：
-![[Pasted image 20230207213240.png]]
+![](Pasted image 20230207213240.png)
 
 至此，workflow 也完成了再一次优化
-![[Pasted image 20230207213544.png]]
+![](Pasted image 20230207213544.png)
 
 > **Note**:
 > 优化后的代码已上传至 [demo-for-clickable-hyperlink](https://github.com/wu-jinpeng/demo-for-clickable-hyperlink/tree/refactor-logging-interceptor) 中的 `refactor-logging-interceptor` branch

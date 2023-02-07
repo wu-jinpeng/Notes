@@ -25,7 +25,7 @@ public Mono<String> getMonoString() {
 ```
 
 实际上并不会，由 `log()` 输出信息的第 1，2 行可以看出 `block()` 时所在的线程是 `boundedElastic-1` ，而它不是 NonBlockingThread，所以使用 `block()` 去阻塞该线程是 OK 的。
-![[Pasted image 20221208001539.png]]
+![](Pasted image 20221208001539.png)
 
 那么如果将代码改成这样呢？🤔
 ```Java
@@ -37,10 +37,10 @@ public Mono<String> getMonoString() {
 ```
 
 此时请求该接口，可以看到 Server 返回了 500，并提示 "block()/blockFirst()/blockLast() are blocking, which is not supported in thread reactor-http-nio-4"
-![[Pasted image 20221208003235.png]]
+![](Pasted image 20221208003235.png)
 
 并且通过 `log()` 输出的第 1，2 行，也能得到印证 `block()` 时所在的线程为 `reactor-http-nio-4`，而这是个 NonBlockingThread，因此 `block()` 会抛出异常。
-![[Pasted image 20221208003050.png]]
+![](Pasted image 20221208003050.png)
 
 > **Tips**: 可以通过以下代码来判断线程是否为 NonBlockingThread
 > 
@@ -63,7 +63,7 @@ public Mono<String> getMonoString() {
 ```
 
 答案是不会。那么为什么 `block()` 就会抛出异常呢？`block()` 的源码如下：
-![[Pasted image 20221208004945.png]]
+![](Pasted image 20221208004945.png)
 
 由第二行可以看到，在 `block()` 中也做了 `subscribe()` 操作，这也是为什么在 `.log().block()` 时，输出的日志会有 Subscriber 的 signal。
 
@@ -106,17 +106,17 @@ public Mono<String> getMonoString() {
 ```
 
 答案是不行。请求一直处于 pending 状态：
-![[Pasted image 20221208020450.png]]
+![](Pasted image 20221208020450.png)
 
 通过查看 `log()` 可以发现 loader 中的 `subscribe()` 发生在 reactor-http-nio-4 线程，而日志中只有 subscribe signal，没有 next, error, complete。
-![[Pasted image 20221208020154.png]]
+![](Pasted image 20221208020154.png)
 
 当我们用 VisualVM 等工具查看 JVM 的线程时，确实可以发现 reactor-http-nio-4 相较于其他 reactor-http-nio 线程，它一直处于 Wait 状态。
-![[Pasted image 20221208020948.png]]
+![](Pasted image 20221208020948.png)
 
 > **Tips**: reactor-http-nio 线程数量是怎么确定的呢？
 > [最少 4 个](https://piotrminkowski.com/2020/03/30/a-deep-dive-into-spring-webflux-threading-model/#:~:text=the%20minimum%20number%20of%20worker%20threads%20in%20the%20pool%20is%204.)，最多 `Runtime.getRuntime().availableProcessors()` 个。
-> ![[Pasted image 20221208032526.png]]
+> ![](Pasted image 20221208032526.png)
 
 可是我们之前明明验证了在 NonBlockingThread 上 `block()` 会抛出异常，而 `subscribe()` 是可以正常运行的啊。😲
 
@@ -178,10 +178,10 @@ public Mono<String> getMonoString() {
 ```
 
 当我们调用 `query("something unused").block()` 时，可以看到结果，因为此时处于 boundedElastic-1 线程中，它不是 NonBlockingThread。
-![[Pasted image 20221208030108.png]]
+![](Pasted image 20221208030108.png)
 
 而当我们调用 `query("something").block()` 时，会看到异常信息 "block()/blockFirst()/blockLast() are blocking, which is not supported in thread reactor-http-nio-4"，因为此时处于 reactor-http-nio-4，其为 NonBlockingThread。
-![[Pasted image 20221208030456.png]]
+![](Pasted image 20221208030456.png)
 
 🤔 那么请问 `query("something").toFuture().get()` 可以吗？
 🙋 不行，因为 `CompletableFuture.get()` 并不会做检查，线程会被阻塞。
@@ -191,6 +191,6 @@ public Mono<String> getMonoString() {
 ```Java
 query("something").subscribeOn(Schedulers.boundedElastic()).toFuture().get()
 ```
-![[Pasted image 20221208031102.png]]
+![](Pasted image 20221208031102.png)
 
 本次分享到此结束。本文仅为了记录下自己在 Reactor 线程模型中进一寸的欢喜，如果以上有理解不到位或者有误的地方，还望各位不吝赐教。🤗
