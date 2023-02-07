@@ -1,5 +1,5 @@
 - Source: 
-- Tags: 
+- Tags: #Java #Plugin
 ---
 
 ## 背景
@@ -129,7 +129,7 @@ public class Controller {
 ```
 
 > **Note**:
-> 以上代码已上传至 [GitHub](https://github.com/wu-jinpeng/demo-for-clickable-hyperlink)。
+> 以上代码已上传至 [demo-for-clickable-hyperlink](https://github.com/wu-jinpeng/demo-for-clickable-hyperlink)。
 
 ## 首次优化
 正常来说，IntelliJ console 中的 URL 都是可点击的超链接，结果因为 URL 中带了括号 `()`，导致出现异常。
@@ -238,15 +238,15 @@ Pattern.compile("\\b(mailto:|(news|(ht|f)tp(s?))://|((?<![\\p{L}0-9_.])(www\\.))
 ![[Pasted image 20230207212348.png]]
 
 > **Note**:
-> 该 Plugin 代码已上传至 [GitHub](https://github.com/wu-jinpeng/intellij-platform-plugin-clickable-hyperlink)
+> 该 Plugin 代码已上传至 [intellij-platform-plugin-clickable-hyperlink](https://github.com/wu-jinpeng/intellij-platform-plugin-clickable-hyperlink)
 > 如需安装至 IntelliJ，请参考 [Installation](https://github.com/wu-jinpeng/intellij-platform-plugin-clickable-hyperlink#installation)
 
 ## 再次优化
 借助 IntelliJ Plugin 我们摆脱了拖拽鼠标选中 URL 的繁琐操作。那么，还能不能更进一步呢？
 
-既然在日志中能看到 `200 OK` 的 status code，意味着 response body 应该也是能获取的。如果我在打印日志时，判断 response body 中是否有数据，岂不是就能避免点开每个 URL？！
+既然在日志中能看到 `200 OK` 的 status code，意味着 response body 应该也是能获取的。如果我在打印日志时，判断 response body 中是否有数据，岂不是就能避免点开每个 URL？！🤔
 
-我们可以将 `LoggingInterceptor` 代码更新如下：
+我们可以将 [demo-for-clickable-hyperlink](https://github.com/wu-jinpeng/demo-for-clickable-hyperlink) 中的 `LoggingInterceptor` 代码更新如下：
 ```Java
 @Component  
 public class LoggingInterceptor implements ExchangeFilterFunction {  
@@ -278,5 +278,8 @@ public class LoggingInterceptor implements ExchangeFilterFunction {
 
 至此，workflow 也完成了再一次优化
 ![[Pasted image 20230207213544.png]]
+
+> **Note**:
+> 优化后的代码已上传至 [demo-for-clickable-hyperlink](https://github.com/wu-jinpeng/demo-for-clickable-hyperlink/tree/refactor-logging-interceptor) 中的 `refactor-logging-interceptor` branch
 
 本次分享到此结束。本文仅为了记录自己在优化日常工作 workflow 过程中进一寸的欢喜，如果以上有理解不到位或者有误的地方，还望各位不吝赐教。🤗
